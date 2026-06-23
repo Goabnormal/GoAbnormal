@@ -4,7 +4,8 @@ import { useInView } from "react-intersection-observer";
 import "../App.css";
 import WaveBackground from "../Components/WaveBackground";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Form, Input, Button, message } from "antd";
+import logo from "../Assets/Images/foote_goabnormaltec_logo.png";
+import { Form, Input, Button, message, notification } from "antd";
 import {
   faGlobe,
   faCode,
@@ -20,7 +21,9 @@ import {
   faBullseye,
   faEnvelope,
   faPhone,
+  faComments,
 } from "@fortawesome/free-solid-svg-icons";
+import dayjs from "dayjs";
 
 import {
   faInstagram,
@@ -29,6 +32,7 @@ import {
   faWhatsapp,
 } from "@fortawesome/free-brands-svg-icons";
 import { motion } from "framer-motion";
+const { TextArea } = Input;
 
 function ServiceCard({
   service,
@@ -80,26 +84,145 @@ export default function Home() {
   const previewRef = useRef(null);
 
   const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
 
-  const onFinish = (values) => {
-    console.log(values);
+  const GAS_URL =
+    "https://script.google.com/macros/s/AKfycbw-GOSjtzqYPRRwwKtn5fS7KXgzIQKdpB9uYnM9lATIxuLMbhP2WYToRKT5wBeCrjpOsw/exec";
 
-    message.success("Your project request has been submitted successfully.");
+  /* FORM SUBMIT */
+  const handleSubmit = async (values) => {
+    try {
+      setLoading(true);
 
-    form.resetFields();
+      /* USER SYSTEM TIME */
+      const submittedAt = dayjs().format("DD-MM-YYYY HH:mm:ss");
+
+      /* PAYLOAD */
+      const payload = {
+        action: "submitContact",
+
+        name: values.name || "",
+
+        phone: values.phone || "",
+
+        email: values.email || "",
+
+        message: values.message || "",
+
+        submittedAt,
+      };
+
+      /* FORM DATA */
+      const formBody = new URLSearchParams(payload).toString();
+
+      /* API CALL */
+      const response = await fetch(GAS_URL, {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+
+        body: formBody,
+      });
+
+      /* SAFER RESPONSE */
+      const text = await response.text();
+
+      let data = {};
+
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error("Invalid server response");
+      }
+
+      /* SUCCESS */
+      if (data.success) {
+        notification.success({
+          message: (
+            <span
+              style={{
+                color: "#113156",
+                fontWeight: 700,
+              }}
+            >
+              Message Sent
+            </span>
+          ),
+
+          description: (
+            <span
+              style={{
+                color: "#113156",
+              }}
+            >
+              Your message has been submitted successfully.
+            </span>
+          ),
+
+          placement: "bottomRight",
+        });
+
+        form.resetFields();
+      } else {
+        throw new Error(data.error || "Submission failed");
+      }
+    } catch (error) {
+      notification.error({
+        message: (
+          <span
+            style={{
+              color: "#d1343c",
+              fontWeight: 700,
+            }}
+          >
+            Submission Failed
+          </span>
+        ),
+
+        description: (
+          <span
+            style={{
+              color: "#113156",
+            }}
+          >
+            Something went wrong. Please try again.
+          </span>
+        ),
+
+        placement: "bottomLeft",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const styl = `.contact-form-card .ant-input, .contact-form-card .ant-input-affix-wrapper {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+    border-radius: 14px;
+    padding: 10px; 
+}`
 
   const fadeUp = {
     hidden: {
       opacity: 0,
-      y: 40,
+      y: 80,
+      scale: 0.96,
+      filter: "blur(12px)",
     },
+
     visible: {
       opacity: 1,
       y: 0,
+      scale: 1,
+      filter: "blur(0px)",
+
       transition: {
-        duration: 0.45,
-        ease: [0.22, 1, 0.36, 1],
+        duration: 3,
+        ease: [0.16, 1, 0.3, 1],
       },
     },
   };
@@ -191,10 +314,30 @@ export default function Home() {
     },
   ];
 
+  const scrollToContact = () => {
+    document.getElementById("contact")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
+  const scrollToTop = () => {
+    const hero = document.getElementById("home");
+
+    if (hero) {
+      hero.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  };
+
   return (
+    <>
+    <style>{styl}</style>
     <div className="container-fluid m-0 p-0">
       {/* HERO */}
-      <div className="hero-section">
+      <div id="home" className="hero-section">
         <WaveBackground />
 
         <div className="hero-overlay"></div>
@@ -217,7 +360,9 @@ export default function Home() {
             </p>
 
             <div className="hero-buttons mb-5">
-              <button className="primary-btn">Start Project</button>
+              <button className="primary-btn" onClick={scrollToContact}>
+                Start Project
+              </button>
             </div>
           </div>
         </div>
@@ -249,7 +394,9 @@ export default function Home() {
                   average agency.
                 </p>
 
-                <button className="who-btn">Work With Us</button>
+                <button className="who-btn" onClick={scrollToContact}>
+                  Work With Us
+                </button>
               </div>
             </div>
 
@@ -370,7 +517,7 @@ export default function Home() {
                 ))}
               </div>
 
-              <button className="service-btn mt-3">
+              <button className="service-btn mt-3" onClick={scrollToContact}>
                 Learn More
                 <FontAwesomeIcon icon={faArrowRight} />
               </button>
@@ -432,7 +579,7 @@ export default function Home() {
 
             <p>Let's create a brand that people remember, trust and choose.</p>
 
-            <button className="why-cta-btn">
+            <button className="why-cta-btn" onClick={scrollToContact}>
               Start Your Project
               <FontAwesomeIcon icon={faArrowRight} />
             </button>
@@ -482,72 +629,108 @@ export default function Home() {
             {/* RIGHT SIDE */}
 
             <div className="contact-form-card">
-              <Form
-                layout="vertical"
-                onFinish={(values) => {
-                  console.log(values);
-                  message.success("Message sent successfully!");
-                }}
-              >
-                <Form.Item
-                  name="name"
-                  label="Full Name"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please enter your name",
-                    },
-                  ]}
-                >
-                  <Input placeholder="John Doe" size="large" />
-                </Form.Item>
+              <Form form={form} layout="vertical" onFinish={handleSubmit}>
+                <div className="row">
+                  {/* NAME */}
+                  <div className="col-md-6">
+                    <Form.Item
+                      label="Name"
+                      name="name"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter your name",
+                        },
+                        {
+                          pattern: /^[A-Za-z\s]+$/,
+                          message: "Name should contain only letters",
+                        },
+                      ]}
+                    >
+                      <Input placeholder="Enter your full name" size="large" />
+                    </Form.Item>
+                  </div>
 
+                  {/* PHONE */}
+                  <div className="col-md-6">
+                    <Form.Item
+                      label="Phone Number"
+                      name="phone"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter phone number",
+                        },
+                        {
+                          pattern: /^[+0-9\s]{10,20}$/,
+                          message: "Please enter a valid phone number",
+                        },
+                      ]}
+                    >
+                      <Input
+                        placeholder="Enter phone number"
+                        size="large"
+                        maxLength={20}
+                      />
+                    </Form.Item>
+                  </div>
+                </div>
+
+                {/* EMAIL */}
                 <Form.Item
-                  name="email"
                   label="Email Address"
+                  name="email"
                   rules={[
                     {
                       required: true,
+                      message: "Please enter email address",
+                    },
+                    {
                       type: "email",
-                      message: "Enter valid email",
+                      message: "Enter valid email address",
                     },
                   ]}
                 >
-                  <Input placeholder="john@example.com" size="large" />
+                  <Input placeholder="Enter your email address" size="large" />
                 </Form.Item>
 
+                {/* MESSAGE */}
                 <Form.Item
-                  name="phone"
-                  label="Phone Number"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Enter phone number",
-                    },
-                  ]}
-                >
-                  <Input placeholder="+91 9876543210" size="large" />
-                </Form.Item>
-
-                <Form.Item
-                  name="message"
                   label="Project Details"
+                  name="message"
                   rules={[
                     {
                       required: true,
-                      message: "Tell us about your project",
+                      message: "Please enter your project details",
+                    },
+                    {
+                      max: 300,
+                      message: "Message cannot exceed 300 characters",
                     },
                   ]}
                 >
-                  <Input.TextArea
+                  <TextArea
                     rows={5}
-                    placeholder="Tell us what you're looking to build..."
+                    maxLength={300}
+                    showCount
+                    placeholder="Tell us about your project..."
                   />
                 </Form.Item>
 
-                <Button htmlType="submit" className="contact-submit-btn">
-                  Start Your Project
-                  <FontAwesomeIcon icon={faArrowRight} />
+                <Button
+                  htmlType="submit"
+                  className="contact-submit-btn"
+                  block
+                  loading={loading}
+                >
+                  <span>{loading ? "Sending..." : "Start Your Project"}</span>
+
+                  {!loading && (
+                    <FontAwesomeIcon
+                      icon={faArrowRight}
+                      className="contact-btn-arrow"
+                    />
+                  )}
                 </Button>
               </Form>
             </div>
@@ -561,14 +744,24 @@ export default function Home() {
         <div className="container">
           <div className="footer-top">
             <div className="footer-brand">
-              <h2>GoAbnormal</h2>
+              <div
+                className="footer-logo-wrapper"
+                onClick={() => {
+                  document.getElementById("home")?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  });
+                }}
+              >
+                <img src={logo} alt="GoAbnormal" className="footer-logo" />
+              </div>
 
               <p>
                 We help startups build unforgettable brands, high-converting
                 websites and growth-driven digital experiences.
               </p>
 
-              <button className="footer-cta-btn">
+              <button className="footer-cta-btn" onClick={scrollToContact}>
                 Start Your Project
                 <FontAwesomeIcon icon={faArrowRight} />
               </button>
@@ -611,7 +804,7 @@ export default function Home() {
 
             <div className="footer-socials">
               <a
-                href="https://instagram.com/"
+                href="https://www.instagram.com/go_abnormalmt/"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -619,7 +812,7 @@ export default function Home() {
               </a>
 
               <a
-                href="https://facebook.com/"
+                href="https://www.facebook.com/profile.php?id=61587317757270"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -627,7 +820,7 @@ export default function Home() {
               </a>
 
               <a
-                href="https://linkedin.com/"
+                href="https://www.linkedin.com/in/stratifytechnologies/"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -635,7 +828,7 @@ export default function Home() {
               </a>
 
               <a
-                href="https://wa.me/919876543210"
+                href="https://wa.me/919840014045"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -645,6 +838,15 @@ export default function Home() {
           </div>
         </div>
       </footer>
+      <a
+        href="https://wa.me/919840014045"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="floating-chat-circle"
+      >
+        <FontAwesomeIcon icon={faComments} bounce />
+      </a>
     </div>
+    </>
   );
 }
