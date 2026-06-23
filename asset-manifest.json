@@ -1,17 +1,18 @@
 {
   "files": {
-    "main.css": "/GoAbnormal/static/css/main.67c1fda2.css",
-    "main.js": "/GoAbnormal/static/js/main.58c91457.js",
+    "main.css": "/GoAbnormal/static/css/main.abf30848.css",
+    "main.js": "/GoAbnormal/static/js/main.af4e5ac6.js",
     "static/js/453.668dbee3.chunk.js": "/GoAbnormal/static/js/453.668dbee3.chunk.js",
     "static/media/goabnormaltec_logo.png": "/GoAbnormal/static/media/goabnormaltec_logo.ed62db0c6503ca40f91c.png",
+    "static/media/foote_goabnormaltec_logo.png": "/GoAbnormal/static/media/foote_goabnormaltec_logo.6ccd1948a2e9714ef3cb.png",
     "static/media/logo.svg": "/GoAbnormal/static/media/logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg",
     "index.html": "/GoAbnormal/index.html",
-    "main.67c1fda2.css.map": "/GoAbnormal/static/css/main.67c1fda2.css.map",
-    "main.58c91457.js.map": "/GoAbnormal/static/js/main.58c91457.js.map",
+    "main.abf30848.css.map": "/GoAbnormal/static/css/main.abf30848.css.map",
+    "main.af4e5ac6.js.map": "/GoAbnormal/static/js/main.af4e5ac6.js.map",
     "453.668dbee3.chunk.js.map": "/GoAbnormal/static/js/453.668dbee3.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.67c1fda2.css",
-    "static/js/main.58c91457.js"
+    "static/css/main.abf30848.css",
+    "static/js/main.af4e5ac6.js"
   ]
 }
